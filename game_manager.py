@@ -129,19 +129,31 @@ class GameManager:
     self.setup_game()
     running = True
     while running:
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-          running = False
-        if event.type == pygame.MOUSEBUTTONDOWN and self.game.winner is None:
-          col = (event.pos[0] - 50) // 200
-          row = (event.pos[1] - 50) // 200
-          current_player = self.players[self.current_player_index]
-          if current_player.make_move(self.game, row, col):
-            self.draw_move(row, col, current_player.symbol)
-            self.game.winner = self.game.check_winner(self.screen)
-            if self.game.winner:
-              print(f"{self.game.winner} wins!")
-            self.current_player_index = (self.current_player_index + 1) % 2
-      pygame.display.update()
+        current_player = self.players[self.current_player_index]
+        if self.game.winner is None and isinstance(current_player, AIPlayer):
+            move = current_player.get_move(self.game)
+            if move is not None:
+                r, c = move
+                current_player.make_move(self.game)
+                self.draw_move(r, c, current_player.symbol)
+                self.game.winner = self.game.check_winner(self.screen)
+                if self.game.winner:
+                    print(f"{self.game.winner} wins!")
+                self.current_player_index = (self.current_player_index + 1) % 2
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN and self.game.winner is None:
+                col = (event.pos[0] - 50) // 200
+                row = (event.pos[1] - 50) // 200
+                current_player = self.players[self.current_player_index]
+                if current_player.make_move(self.game, row, col):
+                    self.draw_move(row, col, current_player.symbol)
+                    self.game.winner = self.game.check_winner(self.screen)
+                    if self.game.winner:
+                        print(f"{self.game.winner} wins!")
+                    self.current_player_index = (self.current_player_index + 1) % 2
+        pygame.display.update()
     pygame.quit()
     exit()
