@@ -15,6 +15,15 @@ MODES = {
   "9x9": 5,
   "10x10": 5
 }
+AI_DEPTH = {
+  "3x3": 8,
+  "5x5": 5,
+  "6x6": 5,
+  "7x7": 4,
+  "8x8": 4,
+  "9x9": 3,
+  "10x10": 3
+}
 
 class GameManager:
   def __init__(self):
@@ -112,7 +121,7 @@ class GameManager:
 
   def setup_game(self):
     game_type, mode = self.draw_menu()
-    dimensions = int(mode[0])
+    dimensions = int(mode.split("x")[0])
     req_wins = MODES[mode]
     self.screen = pygame.display.set_mode((dimensions * 200 + 100, dimensions * 200 + 100))
     self.game = TicTacToe(dimensions, req_wins)
@@ -120,7 +129,8 @@ class GameManager:
     if game_type == "pvp":
       self.players = [Player("X"), Player("O")]
     else:
-      self.players = [Player("X"), AIPlayer("O")]
+      self.players = [Player("X"), AIPlayer("O", AI_DEPTH[mode])]
+      #self.players = [AIPlayer("X", AI_DEPTH[mode]), Player("O")]
 
     self.current_player_index = 0
     self.draw_board()

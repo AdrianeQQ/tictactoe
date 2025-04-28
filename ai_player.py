@@ -1,7 +1,7 @@
 from player import Player
 
 class AIPlayer(Player):
-    def __init__(self, symbol, max_depth=7):
+    def __init__(self, symbol, max_depth=4):
         super().__init__(symbol)
         self.max_depth = max_depth
 
