@@ -33,6 +33,7 @@ class GameManager:
     self.game = None
     self.players = []
     self.current_player_index = 0
+    self.back_button = pygame.Rect(10, 10, 300, 100)
 
   def draw_board(self):
     self.screen.fill(BG_COLOR)
@@ -42,6 +43,7 @@ class GameManager:
     pygame.display.update()
 
   def draw_menu(self):
+    self.screen = pygame.display.set_mode((700, 700))
     self.screen.fill(BG_COLOR)
     font = pygame.font.SysFont("times new roman", 50)
     title_text = font.render("Wybierz tryb gry:", True, LINE_COLOR)
@@ -119,6 +121,14 @@ class GameManager:
       pygame.draw.circle(self.screen, LINE_COLOR, (col * 200 + 150, row * 200 + 150), 75, 8)
     pygame.display.update()
 
+  def draw_back_button(self):
+    font = pygame.font.SysFont("times new roman", 40)
+    pygame.draw.rect(self.screen, BG_COLOR, self.back_button)
+    pygame.draw.rect(self.screen, LINE_COLOR, self.back_button, 5)
+    pvp_text = font.render("Menu", True, LINE_COLOR)
+    self.screen.blit(pvp_text, (110, 35))
+    pygame.display.update()
+
   def setup_game(self):
     game_type, mode = self.draw_menu()
     dimensions = int(mode.split("x")[0])
@@ -138,6 +148,7 @@ class GameManager:
   def run_game(self):
     self.setup_game()
     running = True
+    show_back = False
     while running:
         current_player = self.players[self.current_player_index]
         if self.game.winner is None and isinstance(current_player, AIPlayer):
@@ -147,23 +158,27 @@ class GameManager:
                 current_player.make_move(self.game)
                 self.draw_move(r, c, current_player.symbol)
                 self.game.winner = self.game.check_winner(self.screen)
-                if self.game.winner:
-                    print(f"{self.game.winner} wins!")
                 self.current_player_index = (self.current_player_index + 1) % 2
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and self.game.winner is None:
-                col = (event.pos[0] - 50) // 200
-                row = (event.pos[1] - 50) // 200
-                current_player = self.players[self.current_player_index]
-                if current_player.make_move(self.game, row, col):
-                    self.draw_move(row, col, current_player.symbol)
-                    self.game.winner = self.game.check_winner(self.screen)
-                    if self.game.winner:
-                        print(f"{self.game.winner} wins!")
-                    self.current_player_index = (self.current_player_index + 1) % 2
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.game.winner and self.back_button.collidepoint(event.pos):
+                    self.setup_game()
+                    show_back = False
+                    continue
+                if self.game.winner is None:
+                    col = (event.pos[0] - 50) // 200
+                    row = (event.pos[1] - 50) // 200
+                    current_player = self.players[self.current_player_index]
+                    if current_player.make_move(self.game, row, col):
+                        self.draw_move(row, col, current_player.symbol)
+                        self.game.winner = self.game.check_winner(self.screen)
+                        self.current_player_index = (self.current_player_index + 1) % 2
+        if self.game.winner and not show_back:      
+            self.draw_back_button()
+            show_back = True
         pygame.display.update()
     pygame.quit()
     exit()
